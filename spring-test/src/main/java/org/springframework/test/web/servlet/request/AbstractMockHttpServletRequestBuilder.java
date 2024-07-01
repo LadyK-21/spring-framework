@@ -592,6 +592,9 @@ public abstract class AbstractMockHttpServletRequestBuilder<B extends AbstractMo
 		if (!(parent instanceof AbstractMockHttpServletRequestBuilder<?> parentBuilder)) {
 			throw new IllegalArgumentException("Cannot merge with [" + parent.getClass().getName() + "]");
 		}
+		if (this.uri == null) {
+			this.uri = parentBuilder.uri;
+		}
 		if (!StringUtils.hasText(this.contextPath)) {
 			this.contextPath = parentBuilder.contextPath;
 		}
@@ -902,7 +905,7 @@ public abstract class AbstractMockHttpServletRequestBuilder<B extends AbstractMo
 		};
 
 		try {
-			return (MultiValueMap<String, String>) new FormHttpMessageConverter().read(null, message);
+			return new FormHttpMessageConverter().read(null, message);
 		}
 		catch (IOException ex) {
 			throw new IllegalStateException("Failed to parse form data in request body", ex);

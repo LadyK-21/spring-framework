@@ -814,10 +814,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Common return type found: all factory methods return same type. For a non-parameterized
 		// unique candidate, cache the full type declaration context of the target factory method.
-		cachedReturnType = (uniqueCandidate != null ?
-				ResolvableType.forMethodReturnType(uniqueCandidate) : ResolvableType.forClass(commonType));
-		mbd.factoryMethodReturnType = cachedReturnType;
-		return cachedReturnType.resolve();
+		try {
+			cachedReturnType = (uniqueCandidate != null ?
+					ResolvableType.forMethodReturnType(uniqueCandidate) : ResolvableType.forClass(commonType));
+			mbd.factoryMethodReturnType = cachedReturnType;
+			return cachedReturnType.resolve();
+		}
+		catch (LinkageError err) {
+			// E.g. a NoClassDefFoundError for a generic method return type
+			if (logger.isDebugEnabled()) {
+				logger.debug("Failed to resolve type for factory method of bean '" + beanName + "': " +
+						(uniqueCandidate != null ? uniqueCandidate : commonType), err);
+			}
+			return null;
+		}
 	}
 
 	/**
@@ -834,10 +844,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	 */
 	@Override
 	protected ResolvableType getTypeForFactoryBean(String beanName, RootBeanDefinition mbd, boolean allowInit) {
+		ResolvableType result;
+
 		// Check if the bean definition itself has defined the type with an attribute
-		ResolvableType result = getTypeForFactoryBeanFromAttributes(mbd);
-		if (result != ResolvableType.NONE) {
-			return result;
+		try {
+			result = getTypeForFactoryBeanFromAttributes(mbd);
+			if (result != ResolvableType.NONE) {
+				return result;
+			}
+		}
+		catch (IllegalArgumentException ex) {
+			throw new BeanDefinitionStoreException(mbd.getResourceDescription(), beanName,
+					String.valueOf(ex.getMessage()));
 		}
 
 		// For instance supplied beans, try the target type and bean class immediately
