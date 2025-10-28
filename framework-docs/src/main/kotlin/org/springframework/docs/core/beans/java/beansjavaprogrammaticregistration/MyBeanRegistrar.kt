@@ -27,13 +27,15 @@ class MyBeanRegistrar : BeanRegistrarDsl({
 		prototype = true,
 		lazyInit = true,
 		description = "Custom description") {
-		Bar(bean<Foo>())
+		Bar(bean<Foo>()) // Also possible with Bar(bean())
 	}
 	profile("baz") {
 		registerBean { Baz("Hello World!") }
 	}
 	registerBean<MyRepository>()
-	registerBean(::myRouter)
+	registerBean {
+		myRouter(bean<MyRepository>()) // Also possible with myRouter(bean())
+	}
 })
 
 fun myRouter(myRepository: MyRepository) = router {
