@@ -14,36 +14,37 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.assertj;
+package org.springframework.test.web.reactive.server.assertj;
 
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import jakarta.servlet.http.Cookie;
 import org.assertj.core.api.AbstractMapAssert;
 import org.assertj.core.api.Assertions;
 
+import org.springframework.http.ResponseCookie;
+
 /**
  * AssertJ {@linkplain org.assertj.core.api.Assert assertions} that can be applied
- * to {@link Cookie cookies}.
+ * to {@link ResponseCookie cookies}.
  *
- * @author Brian Clozel
- * @author Stephane Nicoll
- * @since 6.2
+ * @author Rossen Stoyanchev
+ * @since 7.0
  */
-public class CookieMapAssert extends AbstractMapAssert<CookieMapAssert, Map<String, Cookie>, String, Cookie> {
+public class ResponseCookieMapAssert
+		extends AbstractMapAssert<ResponseCookieMapAssert, Map<String, ResponseCookie>, String, ResponseCookie> {
 
 
-	public CookieMapAssert(Cookie[] actual) {
-		super(toMap(actual), CookieMapAssert.class);
+	public ResponseCookieMapAssert(ResponseCookie[] actual) {
+		super(toMap(actual), ResponseCookieMapAssert.class);
 		as("Cookies");
 	}
 
-	private static Map<String, Cookie> toMap(Cookie[] cookies) {
-		Map<String, Cookie> map = new LinkedHashMap<>();
-		for (Cookie cookie : cookies) {
+	private static Map<String, ResponseCookie> toMap(ResponseCookie[] cookies) {
+		Map<String, ResponseCookie> map = new LinkedHashMap<>();
+		for (ResponseCookie cookie : cookies) {
 			map.putIfAbsent(cookie.getName(), cookie);
 		}
 		return map;
@@ -55,7 +56,7 @@ public class CookieMapAssert extends AbstractMapAssert<CookieMapAssert, Map<Stri
 	 * @param name the name of an expected cookie
 	 * @see #containsKey
 	 */
-	public CookieMapAssert containsCookie(String name) {
+	public ResponseCookieMapAssert containsCookie(String name) {
 		return containsKey(name);
 	}
 
@@ -64,7 +65,7 @@ public class CookieMapAssert extends AbstractMapAssert<CookieMapAssert, Map<Stri
 	 * @param names the names of expected cookies
 	 * @see #containsKeys
 	 */
-	public CookieMapAssert containsCookies(String... names) {
+	public ResponseCookieMapAssert containsCookies(String... names) {
 		return containsKeys(names);
 	}
 
@@ -74,7 +75,7 @@ public class CookieMapAssert extends AbstractMapAssert<CookieMapAssert, Map<Stri
 	 * @param name the name of a cookie that should not be present
 	 * @see #doesNotContainKey
 	 */
-	public CookieMapAssert doesNotContainCookie(String name) {
+	public ResponseCookieMapAssert doesNotContainCookie(String name) {
 		return doesNotContainKey(name);
 	}
 
@@ -84,7 +85,7 @@ public class CookieMapAssert extends AbstractMapAssert<CookieMapAssert, Map<Stri
 	 * @param names the names of cookies that should not be present
 	 * @see #doesNotContainKeys
 	 */
-	public CookieMapAssert doesNotContainCookies(String... names) {
+	public ResponseCookieMapAssert doesNotContainCookies(String... names) {
 		return doesNotContainKeys(names);
 	}
 
@@ -94,75 +95,69 @@ public class CookieMapAssert extends AbstractMapAssert<CookieMapAssert, Map<Stri
 	 * @param name the name of an expected cookie
 	 * @param cookieRequirements the requirements for the cookie
 	 */
-	public CookieMapAssert hasCookieSatisfying(String name, Consumer<Cookie> cookieRequirements) {
+	public ResponseCookieMapAssert hasCookieSatisfying(String name, Consumer<ResponseCookie> cookieRequirements) {
 		return hasEntrySatisfying(name, cookieRequirements);
 	}
 
 	/**
 	 * Verify that the actual cookies contain a cookie with the given {@code name}
-	 * whose {@linkplain Cookie#getValue() value} is equal to the given one.
+	 * whose {@linkplain ResponseCookie#getValue() value} is equal to the given one.
 	 * @param name the name of the cookie
 	 * @param expected the expected value of the cookie
 	 */
-	public CookieMapAssert hasValue(String name, String expected) {
-		return hasCookieSatisfying(name, cookie ->
-				Assertions.assertThat(cookie.getValue()).isEqualTo(expected));
+	public ResponseCookieMapAssert hasValue(String name, String expected) {
+		return hasCookieSatisfying(name, cookie -> Assertions.assertThat(cookie.getValue()).isEqualTo(expected));
 	}
 
 	/**
 	 * Verify that the actual cookies contain a cookie with the given {@code name}
-	 * whose {@linkplain Cookie#getMaxAge() max age} is equal to the given one.
+	 * whose {@linkplain ResponseCookie#getMaxAge() max age} is equal to the given one.
 	 * @param name the name of the cookie
 	 * @param expected the expected max age of the cookie
 	 */
-	public CookieMapAssert hasMaxAge(String name, Duration expected) {
-		return hasCookieSatisfying(name, cookie ->
-				Assertions.assertThat(Duration.ofSeconds(cookie.getMaxAge())).isEqualTo(expected));
+	public ResponseCookieMapAssert hasMaxAge(String name, Duration expected) {
+		return hasCookieSatisfying(name, cookie -> Assertions.assertThat(cookie.getMaxAge()).isEqualTo(expected));
 	}
 
 	/**
 	 * Verify that the actual cookies contain a cookie with the given {@code name}
-	 * whose {@linkplain Cookie#getPath() path} is equal to the given one.
+	 * whose {@linkplain ResponseCookie#getPath() path} is equal to the given one.
 	 * @param name the name of the cookie
 	 * @param expected the expected path of the cookie
 	 */
-	public CookieMapAssert hasPath(String name, String expected) {
-		return hasCookieSatisfying(name, cookie ->
-				Assertions.assertThat(cookie.getPath()).isEqualTo(expected));
+	public ResponseCookieMapAssert hasPath(String name, String expected) {
+		return hasCookieSatisfying(name, cookie -> Assertions.assertThat(cookie.getPath()).isEqualTo(expected));
 	}
 
 	/**
 	 * Verify that the actual cookies contain a cookie with the given {@code name}
-	 * whose {@linkplain Cookie#getDomain() domain} is equal to the given one.
+	 * whose {@linkplain ResponseCookie#getDomain() domain} is equal to the given one.
 	 * @param name the name of the cookie
 	 * @param expected the expected domain of the cookie
 	 */
-	public CookieMapAssert hasDomain(String name, String expected) {
-		return hasCookieSatisfying(name, cookie ->
-				Assertions.assertThat(cookie.getDomain()).isEqualTo(expected));
+	public ResponseCookieMapAssert hasDomain(String name, String expected) {
+		return hasCookieSatisfying(name, cookie -> Assertions.assertThat(cookie.getDomain()).isEqualTo(expected));
 	}
 
 	/**
 	 * Verify that the actual cookies contain a cookie with the given {@code name}
-	 * whose {@linkplain Cookie#getSecure() secure flag} is equal to the give one.
+	 * whose {@linkplain ResponseCookie#isSecure() secure flag} is equal to the give one.
 	 * @param name the name of the cookie
 	 * @param expected whether the cookie is secure
 	 */
-	public CookieMapAssert isSecure(String name, boolean expected) {
-		return hasCookieSatisfying(name, cookie ->
-				Assertions.assertThat(cookie.getSecure()).isEqualTo(expected));
+	public ResponseCookieMapAssert isSecure(String name, boolean expected) {
+		return hasCookieSatisfying(name, cookie -> Assertions.assertThat(cookie.isSecure()).isEqualTo(expected));
 	}
 
 	/**
 	 * Verify that the actual cookies contain a cookie with the given {@code name}
-	 * whose {@linkplain Cookie#isHttpOnly() http only flag} is equal to the given
+	 * whose {@linkplain ResponseCookie#isHttpOnly() http only flag} is equal to the given
 	 * one.
 	 * @param name the name of the cookie
 	 * @param expected whether the cookie is http only
 	 */
-	public CookieMapAssert isHttpOnly(String name, boolean expected) {
-		return hasCookieSatisfying(name, cookie ->
-				Assertions.assertThat(cookie.isHttpOnly()).isEqualTo(expected));
+	public ResponseCookieMapAssert isHttpOnly(String name, boolean expected) {
+		return hasCookieSatisfying(name, cookie -> Assertions.assertThat(cookie.isHttpOnly()).isEqualTo(expected));
 	}
 
 }

@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.client.assertj;
+package org.springframework.test.web.reactive.server.assertj;
 
-import org.springframework.test.web.servlet.client.ExchangeResult;
+
+import org.springframework.test.web.reactive.server.ExchangeResult;
 
 /**
- * Default implementation of {@link RestTestClientResponse}.
+ * Default implementation of {@link WebTestClientResponse}.
  *
  * @author Rossen Stoyanchev
  * @since 7.0
  */
-final class DefaultRestTestClientResponse implements RestTestClientResponse {
+final class DefaultWebTestClientResponse implements WebTestClientResponse {
 
 	private final ExchangeResult exchangeResult;
 
 
-	DefaultRestTestClientResponse(ExchangeResult exchangeResult) {
+	DefaultWebTestClientResponse(ExchangeResult exchangeResult) {
 		this.exchangeResult = exchangeResult;
 	}
 
@@ -43,8 +44,8 @@ final class DefaultRestTestClientResponse implements RestTestClientResponse {
 	 * Use AssertJ's {@link org.assertj.core.api.Assertions#assertThat assertThat} instead.
 	 */
 	@Override
-	public RestTestClientResponseAssert assertThat() {
-		return new RestTestClientResponseAssert(this);
+	public WebTestClientResponseAssert assertThat() {
+		return new WebTestClientResponseAssert(this);
 	}
 
 }

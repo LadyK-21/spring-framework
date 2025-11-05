@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package org.springframework.test.web.servlet.client.assertj;
+package org.springframework.test.web.reactive.server.assertj;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.function.Supplier;
 
-import jakarta.servlet.http.Cookie;
 import org.assertj.core.api.AbstractByteArrayAssert;
 import org.assertj.core.api.AbstractIntegerAssert;
 import org.assertj.core.api.AbstractObjectAssert;
@@ -40,21 +38,20 @@ import org.springframework.test.http.MediaTypeAssert;
 import org.springframework.test.json.AbstractJsonContentAssert;
 import org.springframework.test.json.JsonContent;
 import org.springframework.test.json.JsonContentAssert;
-import org.springframework.test.web.servlet.assertj.CookieMapAssert;
-import org.springframework.test.web.servlet.client.ExchangeResult;
-import org.springframework.util.MultiValueMap;
+import org.springframework.test.web.reactive.server.ExchangeResult;
 import org.springframework.util.function.SingletonSupplier;
 
 /**
- * AssertJ {@linkplain org.assertj.core.api.Assert assertions} for the result from a
- * {@link org.springframework.test.web.servlet.client.RestTestClient} exchange.
+ * AssertJ {@linkplain org.assertj.core.api.Assert assertions} for the result
+ * from a {@link org.springframework.test.web.reactive.server.WebTestClient}
+ * exchange.
  *
  * @author Rossen Stoyanchev
  * @since 7.0
  */
 @SuppressWarnings({"UnusedReturnValue", "unused"})
-public class RestTestClientResponseAssert
-		extends AbstractObjectAssert<RestTestClientResponseAssert, RestTestClientResponse> {
+public class WebTestClientResponseAssert
+		extends AbstractObjectAssert<WebTestClientResponseAssert, WebTestClientResponse> {
 
 	private final Supplier<MediaTypeAssert> contentTypeAssertSupplier;
 
@@ -63,8 +60,8 @@ public class RestTestClientResponseAssert
 	private final Supplier<AbstractIntegerAssert<?>> statusAssert;
 
 
-	RestTestClientResponseAssert(RestTestClientResponse actual) {
-		super(actual, RestTestClientResponseAssert.class);
+	WebTestClientResponseAssert(WebTestClientResponse actual) {
+		super(actual, WebTestClientResponseAssert.class);
 
 		this.contentTypeAssertSupplier = SingletonSupplier.of(() ->
 				new MediaTypeAssert(getExchangeResult().getResponseHeaders().getContentType()));
@@ -81,7 +78,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the HTTP status is equal to the specified status code.
 	 * @param status the expected HTTP status code
 	 */
-	public RestTestClientResponseAssert hasStatus(int status) {
+	public WebTestClientResponseAssert hasStatus(int status) {
 		status().isEqualTo(status);
 		return this.myself;
 	}
@@ -91,7 +88,7 @@ public class RestTestClientResponseAssert
 	 * {@linkplain HttpStatus status}.
 	 * @param status the expected HTTP status code
 	 */
-	public RestTestClientResponseAssert hasStatus(HttpStatus status) {
+	public WebTestClientResponseAssert hasStatus(HttpStatus status) {
 		return hasStatus(status.value());
 	}
 
@@ -99,7 +96,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the HTTP status is equal to {@link HttpStatus#OK}.
 	 * @see #hasStatus(HttpStatus)
 	 */
-	public RestTestClientResponseAssert hasStatusOk() {
+	public WebTestClientResponseAssert hasStatusOk() {
 		return hasStatus(HttpStatus.OK);
 	}
 
@@ -107,7 +104,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the HTTP status code is in the 1xx range.
 	 * @see <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-10.1">RFC 2616</a>
 	 */
-	public RestTestClientResponseAssert hasStatus1xxInformational() {
+	public WebTestClientResponseAssert hasStatus1xxInformational() {
 		return hasStatusSeries(HttpStatus.Series.INFORMATIONAL);
 	}
 
@@ -115,7 +112,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the HTTP status code is in the 2xx range.
 	 * @see <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-10.2">RFC 2616</a>
 	 */
-	public RestTestClientResponseAssert hasStatus2xxSuccessful() {
+	public WebTestClientResponseAssert hasStatus2xxSuccessful() {
 		return hasStatusSeries(HttpStatus.Series.SUCCESSFUL);
 	}
 
@@ -123,7 +120,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the HTTP status code is in the 3xx range.
 	 * @see <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-10.3">RFC 2616</a>
 	 */
-	public RestTestClientResponseAssert hasStatus3xxRedirection() {
+	public WebTestClientResponseAssert hasStatus3xxRedirection() {
 		return hasStatusSeries(HttpStatus.Series.REDIRECTION);
 	}
 
@@ -131,7 +128,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the HTTP status code is in the 4xx range.
 	 * @see <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-10.4">RFC 2616</a>
 	 */
-	public RestTestClientResponseAssert hasStatus4xxClientError() {
+	public WebTestClientResponseAssert hasStatus4xxClientError() {
 		return hasStatusSeries(HttpStatus.Series.CLIENT_ERROR);
 	}
 
@@ -139,11 +136,11 @@ public class RestTestClientResponseAssert
 	 * Verify that the HTTP status code is in the 5xx range.
 	 * @see <a href="https://datatracker.ietf.org/doc/html/rfc2616#section-10.5">RFC 2616</a>
 	 */
-	public RestTestClientResponseAssert hasStatus5xxServerError() {
+	public WebTestClientResponseAssert hasStatus5xxServerError() {
 		return hasStatusSeries(HttpStatus.Series.SERVER_ERROR);
 	}
 
-	private RestTestClientResponseAssert hasStatusSeries(HttpStatus.Series series) {
+	private WebTestClientResponseAssert hasStatusSeries(HttpStatus.Series series) {
 		HttpStatusCode status = getExchangeResult().getStatus();
 		Assertions.assertThat(HttpStatus.Series.resolve(status.value())).as("HTTP status series").isEqualTo(series);
 		return this.myself;
@@ -174,7 +171,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the response contains a header with the given {@code name}.
 	 * @param name the name of an expected HTTP header
 	 */
-	public RestTestClientResponseAssert containsHeader(String name) {
+	public WebTestClientResponseAssert containsHeader(String name) {
 		headers().containsHeader(name);
 		return this.myself;
 	}
@@ -183,7 +180,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the response does not contain a header with the given {@code name}.
 	 * @param name the name of an HTTP header that should not be present
 	 */
-	public RestTestClientResponseAssert doesNotContainHeader(String name) {
+	public WebTestClientResponseAssert doesNotContainHeader(String name) {
 		headers().doesNotContainHeader(name);
 		return this.myself;
 	}
@@ -194,7 +191,7 @@ public class RestTestClientResponseAssert
 	 * @param name the name of an expected HTTP header
 	 * @param value the expected value of the header
 	 */
-	public RestTestClientResponseAssert hasHeader(String name, String value) {
+	public WebTestClientResponseAssert hasHeader(String name, String value) {
 		headers().hasValue(name, value);
 		return this.myself;
 	}
@@ -211,7 +208,7 @@ public class RestTestClientResponseAssert
 	 * Verify that the response's {@code Content-Type} is equal to the given value.
 	 * @param contentType the expected content type
 	 */
-	public RestTestClientResponseAssert hasContentType(MediaType contentType) {
+	public WebTestClientResponseAssert hasContentType(MediaType contentType) {
 		contentType().isEqualTo(contentType);
 		return this.myself;
 	}
@@ -221,7 +218,7 @@ public class RestTestClientResponseAssert
 	 * string representation.
 	 * @param contentType the expected content type
 	 */
-	public RestTestClientResponseAssert hasContentType(String contentType) {
+	public WebTestClientResponseAssert hasContentType(String contentType) {
 		contentType().isEqualTo(contentType);
 		return this.myself;
 	}
@@ -232,7 +229,7 @@ public class RestTestClientResponseAssert
 	 * given value.
 	 * @param contentType the expected compatible content type
 	 */
-	public RestTestClientResponseAssert hasContentTypeCompatibleWith(MediaType contentType) {
+	public WebTestClientResponseAssert hasContentTypeCompatibleWith(MediaType contentType) {
 		contentType().isCompatibleWith(contentType);
 		return this.myself;
 	}
@@ -243,46 +240,23 @@ public class RestTestClientResponseAssert
 	 * given string representation.
 	 * @param contentType the expected compatible content type
 	 */
-	public RestTestClientResponseAssert hasContentTypeCompatibleWith(String contentType) {
+	public WebTestClientResponseAssert hasContentTypeCompatibleWith(String contentType) {
 		contentType().isCompatibleWith(contentType);
 		return this.myself;
 	}
 
 	/**
-	 * Return a new {@linkplain CookieMapAssert assertion} object that uses the
-	 * response's {@linkplain Cookie cookies} as the object to test.
+	 * Return a new {@linkplain ResponseCookieMapAssert assertion} object that uses the
+	 * response's {@linkplain ResponseCookie cookies} as the object to test.
 	 */
-	public CookieMapAssert cookies() {
-		return new CookieMapAssert(getCookies());
+	public ResponseCookieMapAssert cookies() {
+		return new ResponseCookieMapAssert(getCookies());
 	}
 
-	private Cookie[] getCookies() {
-		List<Cookie> cookies = new ArrayList<>();
-		MultiValueMap<String, ResponseCookie> responseCookies = getExchangeResult().getResponseCookies();
-		for (String name : responseCookies.keySet()) {
-			for (ResponseCookie responseCookie : responseCookies.get(name)) {
-				Cookie cookie = new Cookie(name, responseCookie.getValue());
-				if (!responseCookie.getMaxAge().isNegative()) {
-					cookie.setMaxAge((int) responseCookie.getMaxAge().getSeconds());
-				}
-				if (responseCookie.getDomain() != null) {
-					cookie.setDomain(responseCookie.getDomain());
-				}
-				if (responseCookie.getPath() != null) {
-					cookie.setPath(responseCookie.getPath());
-				}
-				if (responseCookie.getSameSite() != null) {
-					cookie.setAttribute("SameSite", responseCookie.getSameSite());
-				}
-				cookie.setSecure(responseCookie.isSecure());
-				cookie.setHttpOnly(responseCookie.isHttpOnly());
-				if (responseCookie.isPartitioned()) {
-					cookie.setAttribute("Partitioned", "");
-				}
-				cookies.add(cookie);
-			}
-		}
-		return cookies.toArray(new Cookie[0]);
+	private ResponseCookie[] getCookies() {
+		return getExchangeResult().getResponseCookies().values().stream()
+				.flatMap(Collection::stream)
+				.toArray(ResponseCookie[]:: new);
 	}
 
 	/**
@@ -310,7 +284,7 @@ public class RestTestClientResponseAssert
 	/**
 	 * Verify that the response body is equal to the given value.
 	 */
-	public RestTestClientResponseAssert hasBodyTextEqualTo(String bodyText) {
+	public WebTestClientResponseAssert hasBodyTextEqualTo(String bodyText) {
 		bodyText().isEqualTo(bodyText);
 		return this.myself;
 	}
